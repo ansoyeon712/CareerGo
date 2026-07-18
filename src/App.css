@@ -1,0 +1,31 @@
+.language-button {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+  }
+  
+  .language-button.active {
+    background: rgb(153, 138, 208);
+    font-weight: bold;
+  }
+
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .Sidebar {
+    width: 250px;
+    background: #7f8ad4;
+    padding: 35px;
+  }
+  
+  .main {
+    flex: 1;
+    padding: 2rem;
+  }
