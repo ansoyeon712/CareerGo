@@ -8,44 +8,83 @@ type CareerItem = {
   period: string
   description: string
   link: string
-}
-
-type EducationItem = {
-  school: string
-  degree: string
-  period: string
-  description: string
-}
-
-type MediaItem = {
-  title: string
-  organization: string
-  period: string
-  description: string
-  link: string
+  portfolioFile: File | null
+  portfolioFileUrl: string
 }
 
 function App() {
   const [language, setLanguage] = useState('en')
-  const [careerItems, setCareerItems] = useState<CareerItem[]>([])
-  const [educationItems, setEducationItems] = useState<EducationItem[]>([])
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
 
+  const [name, setName] = useState('')
+  const [headline, setHeadline] = useState('')
+  const [about, setAbout] = useState('')
+
+  const [careerItems, setCareerItems] = useState<CareerItem[]>([])
+
+  const addCareer = () => {
+    setCareerItems([
+      ...careerItems,
+      {
+        title: '',
+        organization: '',
+        period: '',
+        description: '',
+        link: '',
+        portfolioFile: null,
+        portfolioFileUrl: '',
+      }
+    ])
+  }
+
+  const saveProfile = () => {
+    const profileData = {
+      name,
+      headline,
+      about,
+      careerItems: careerItems.map((item) => ({
+        title: item.title,
+        organization: item.organization,
+        period: item.period,
+        description: item.description,
+        link: item.link,
+      })),
+    }
+  
+    fetch('http://127.0.0.1:5001/api/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        alert('Profile saved successfully')
+      })
+  }
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5001/api/career')
+    fetch('http://127.0.0.1:5001/api/profile')
       .then((response) => response.json())
-      .then((data) => setCareerItems(data))
-
-    fetch('http://127.0.0.1:5001/api/education')
-      .then((response) => response.json())
-      .then((data) => setEducationItems(data))
-
-    fetch('http://127.0.0.1:5001/api/media')
-      .then((response) => response.json())
-      .then((data) => setMediaItems(data))
+      .then((data) => {
+        setName(data.name)
+        setHeadline(data.headline)
+        setAbout(data.about)
+  
+        const loadedCareerItems = data.careerItems.map((item: CareerItem) => ({
+          title: item.title,
+          organization: item.organization,
+          period: item.period,
+          description: item.description,
+          link: item.link,
+          portfolioFile: null,
+          portfolioFileUrl: '',
+        }))
+  
+        setCareerItems(loadedCareerItems)
+      })
   }, [])
-
 
   return (
     <div className="app">
@@ -53,53 +92,152 @@ function App() {
 
       <main className="main">
         <h1>CareerGo</h1>
-        <p>Welcome! Your career starts here.</p>
+        <p>Create your own personal PR page.</p>
 
-        <section>
+        <section className="editor-section">
+          <h2>Basic Profile</h2>
+
+          <input
+            placeholder="Your name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+
+          <input
+            placeholder="Headline, e.g. Software Developer"
+            value={headline}
+            onChange={(event) => setHeadline(event.target.value)}
+          />
+
+          <textarea
+            placeholder="Tell people who you are."
+            value={about}
+            onChange={(event) => setAbout(event.target.value)}
+          />
+        </section>
+
+        <section className="editor-section">
           <h2>Career</h2>
 
-          {careerItems.map((item) => (
-            <div className="career-card" key={item.title}>
-              <h3>{item.title}</h3>
-              <p>{item.organization}</p>
-              <p>{item.period}</p>
-              <p>{item.description}</p>
+          <button onClick={addCareer}>Add career</button>
 
-              <a href={item.link} target="_blank">
-                Portfolio Link
-              </a>
+          {careerItems.map((item, index) => (
+            <div className="career-card" key={index}>
+              <input
+                placeholder="Position"
+                value={item.title}
+                onChange={(event) => {
+                  const updatedItems = [...careerItems]
+                  updatedItems[index].title = event.target.value
+                  setCareerItems(updatedItems)
+                }}
+              />
+
+              <input
+                placeholder="Organization"
+                value={item.organization}
+                onChange={(event) => {
+                  const updatedItems = [...careerItems]
+                  updatedItems[index].organization = event.target.value
+                  setCareerItems(updatedItems)
+                }}
+              />
+
+              <input
+                placeholder="Period"
+                value={item.period}
+                onChange={(event) => {
+                  const updatedItems = [...careerItems]
+                  updatedItems[index].period = event.target.value
+                  setCareerItems(updatedItems)
+                }}
+              />
+
+              <textarea
+                placeholder="Description"
+                value={item.description}
+                onChange={(event) => {
+                  const updatedItems = [...careerItems]
+                  updatedItems[index].description = event.target.value
+                  setCareerItems(updatedItems)
+                }}
+              />
+
+              <input
+                placeholder="Portfolio link"
+                value={item.link}
+                onChange={(event) => {
+                  const updatedItems = [...careerItems]
+                  updatedItems[index].link = event.target.value
+                  setCareerItems(updatedItems)
+                }}
+              />
+
+ <input
+  type="file"
+  accept=".pdf,.ppt,.pptx"
+  onChange={(event) => {
+    const selectedFile = event.target.files?.[0]
+
+    if (!selectedFile) {
+      return
+    }
+
+    const updatedItems = [...careerItems]
+
+    updatedItems[index] = {
+      ...updatedItems[index],
+      portfolioFile: selectedFile,
+      portfolioFileUrl: URL.createObjectURL(selectedFile),
+    }
+
+    setCareerItems(updatedItems)
+  }}
+
+/>
+              
             </div>
           ))}
         </section>
 
-        <section>
-          <h2>Education</h2>
+        <button onClick={saveProfile}>Save Profile</button>
 
-          {educationItems.map((item) => (
-            <div className="career-card" key={item.school}>
-              <h3>{item.school}</h3>
-              <p>{item.degree}</p>
-              <p>{item.period}</p>
-              <p>{item.description}</p>
-            </div>
-          ))}
-        </section>
 
-        <section>
-          <h2>Media / Projects</h2>
+        <section className="preview-section">
+          <h2>Preview</h2>
 
-          {mediaItems.map((item) => (
-            <div className="career-card" key={item.title}>
-              <h3>{item.title}</h3>
-              <p>{item.organization}</p>
-              <p>{item.period}</p>
-              <p>{item.description}</p>
+          <div className="preview-card">
+            <h1>{name || 'Your Name'}</h1>
+            <h3>{headline || 'Your headline'}</h3>
+            <p>{about || 'Your self-introduction will appear here.'}</p>
 
-              <a href={item.link} target="_blank">
-                Link
-              </a>
-            </div>
-          ))}
+            <h2>Career</h2>
+
+            {careerItems.length === 0 && (
+              <p>Your career history will appear here.</p>
+            )}
+
+            {careerItems.map((item, index) => (
+              <div className="preview-item" key={index}>
+                <h3>{item.title || 'Position'}</h3>
+                <p>{item.organization || 'Organization'}</p>
+                <p>{item.period || 'Period'}</p>
+                <p>{item.description || 'Description'}</p>
+
+                {item.link && (
+                  <a href={item.link} target="_blank" rel="noreferrer">
+                    Portfolio
+                  </a>
+                )}
+
+{item.portfolioFileUrl && (
+  <a href={item.portfolioFileUrl} target="_blank" rel="noreferrer">
+    {item.portfolioFile?.name || 'Open file'}
+  </a>
+                )}
+              </div>
+            ))}
+          </div>
         </section>
       </main>
     </div>

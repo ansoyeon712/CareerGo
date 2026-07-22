@@ -1,56 +1,35 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+from database import init_db, get_profile, save_profile
 
 app = Flask(__name__)
 CORS(app)
+
+init_db()
+
 
 @app.route("/")
 def home():
     return "CareerGo backend is running"
 
-@app.route("/api/career")
-def get_career():
-    career_data = [
-        {
-            "period": "2024",
-            "description": "Hiwi in Digital Literacy Programming Kurse, mit R" 
 
-        }
-    ]
-    
-
-    return jsonify(career_data)
+@app.route("/api/profile", methods=["GET"])
+def get_profile_api():
+    profile = get_profile()
+    return jsonify(profile)
 
 
-@app.route("/api/education")
-def get_education():
-    education_data = [
-        {
-            "school": "Rostock University",
-            "degree": "B.sc. Informatik",
-            "period": "2026 -",
-            "description": "Ich studiere Informatik mit Schwerpunkt auf Softwareentwicklung und möchte meine Kenntnisse in der Praxis weiter vertiefen."
-        }
-    ]
+@app.route("/api/profile", methods=["POST"])
+def save_profile_api():
+    profile_data = request.get_json()
+    save_profile(profile_data)
 
-    return jsonify(education_data)
+    return jsonify({
+        "message": "Profile saved successfully",
+        "profile": get_profile()
+    })
 
-
-@app.route("/api/media")
-def get_media():
-    media_data = [
-        {
-            "title": "My Github",
-            "organization": "Die Web-app CareerGo",
-            "period": "2026",
-            "description": "Entwicklung einer 3-Tier-Webanwendung mit Frontend, Backend und Datenbank zur Erstellung von Lebensläufen sowie zur Auswertung von Seitenaufrufen und Nutzerinteraktionen.",
-            "link": "https://example.com"
-        }
-    ]
-
-    return jsonify(media_data)
-
-   
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
