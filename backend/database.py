@@ -28,6 +28,16 @@ def init_db():
 
     connection.execute(
         """
+        CREATE TABLE IF NOT EXISTS skills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL DEFAULT ''
+        )
+        """
+    )
+
+    connection.execute(
+        """
         INSERT OR IGNORE INTO profile (
             id,
             name,
@@ -91,3 +101,53 @@ def save_profile(profile_data):
 
     connection.commit()
     connection.close()
+
+
+def get_skills():
+    connection = get_connection()
+
+    rows = connection.execute(
+        """
+        SELECT id, name, category
+        FROM skills
+        ORDER BY id DESC
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return [
+        {
+            "id": row["id"],
+            "name": row["name"],
+            "category": row["category"],
+        }
+        for row in rows
+    ]
+
+
+def add_skill(skill_data):
+    name = skill_data.get("name", "")
+    category = skill_data.get("category", "")
+
+    connection = get_connection()
+
+    cursor = connection.execute(
+        """
+        INSERT INTO skills (name, category)
+        VALUES (?, ?)
+        """,
+        (name, category),
+    )
+
+    connection.commit()
+
+    new_skill_id = cursor.lastrowid
+
+    connection.close()
+
+    return {
+        "id": new_skill_id,
+        "name": name,
+        "category": category,
+    }
