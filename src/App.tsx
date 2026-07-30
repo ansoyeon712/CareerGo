@@ -18,12 +18,16 @@ type Skill = {
   category: string
 }
 
+type language = 'ko'|'de'|'en'
+
+
+
 function App() {
   const [careerItems, setCareerItems] = useState<CareerItem[]>([])
 
   const [skills, setSkills] = useState<Skill[]>([])
   
-  const [language, setLanguage] = useState('en')
+  const [language, setLanguage] = useState<language>('en')
 
   const [name, setName] = useState('')
 
@@ -34,6 +38,59 @@ function App() {
   const [skillName, setSkillName] = useState('')
 
   const [skillCategory, setSkillCategory] = useState('')
+
+  const texts = {
+    ko: {
+      title: 'CareerGo',
+      subtitle: '나만의 자기 PR 페이지를 만들어보세요.',
+      basicProfile: '기본 프로필',
+      namePlaceholder: '이름',
+      headlinePlaceholder: '한 줄 소개',
+      aboutPlaceholder: '자기소개를 입력하세요.',
+      career: '경력',
+      addCareer: '경력 추가',
+      skills: '기술',
+      skillNamePlaceholder: '기술 이름, 예: React',
+      skillCategoryPlaceholder: '분야, 예: Frontend',
+      addSkill: '기술 추가',
+      saveProfile: '프로필 저장',
+      preview: '미리보기',
+    },
+    en: {
+      title: 'CareerGo',
+      subtitle: 'Create your own personal PR page.',
+      basicProfile: 'Basic Profile',
+      namePlaceholder: 'Your name',
+      headlinePlaceholder: 'Headline',
+      aboutPlaceholder: 'Tell people who you are.',
+      career: 'Career',
+      addCareer: 'Add career',
+      skills: 'Skills',
+      skillNamePlaceholder: 'Skill name, e.g. React',
+      skillCategoryPlaceholder: 'Category, e.g. Frontend',
+      addSkill: 'Add Skill',
+      saveProfile: 'Save Profile',
+      preview: 'Preview',
+    },
+    de: {
+      title: 'CareerGo',
+      subtitle: 'Erstelle deine eigene persönliche PR-Seite.',
+      basicProfile: 'Basisprofil',
+      namePlaceholder: 'Dein Name',
+      headlinePlaceholder: 'Kurzbeschreibung',
+      aboutPlaceholder: 'Stelle dich kurz vor.',
+      career: 'Karriere',
+      addCareer: 'Karriere hinzufügen',
+      skills: 'Fähigkeiten',
+      skillNamePlaceholder: 'Fähigkeit, z. B. React',
+      skillCategoryPlaceholder: 'Kategorie, z. B. Frontend',
+      addSkill: 'Fähigkeit hinzufügen',
+      saveProfile: 'Profil speichern',
+      preview: 'Vorschau',
+    },
+  }
+  
+  const t = texts[language as keyof typeof texts]
 
   const loadSkills = () => {
   fetch('http://127.0.0.1:5001/api/skills')
@@ -172,14 +229,14 @@ function App() {
       <Sidebar language={language} setLanguage={setLanguage} />
 
       <main className="main">
-        <h1>CareerGo</h1>
-        <p>Create your own personal PR page.</p>
+        <h1>{t.title}</h1>
+        <p>{t.subtitle}</p>
 
         <section className="editor-section">
-          <h2>Basic Profile</h2>
+          <h2>{t.basicProfile}</h2>
 
           <input
-            placeholder="Your name"
+            placeholder={t.namePlaceholder}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
