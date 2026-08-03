@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Sidebar from './components/Sidebar'
+import { texts, type Language } from './translations'
 
 type CareerItem = {
   title: string
@@ -18,8 +19,6 @@ type Skill = {
   category: string
 }
 
-type language = 'ko'|'de'|'en'
-
 
 
 function App() {
@@ -27,7 +26,9 @@ function App() {
 
   const [skills, setSkills] = useState<Skill[]>([])
   
-  const [language, setLanguage] = useState<language>('en')
+  const [language, setLanguage] = useState<Language>('en')
+
+  const t = texts[language]
 
   const [name, setName] = useState('')
 
@@ -38,59 +39,7 @@ function App() {
   const [skillName, setSkillName] = useState('')
 
   const [skillCategory, setSkillCategory] = useState('')
-
-  const texts = {
-    ko: {
-      title: 'CareerGo',
-      subtitle: '나만의 자기 PR 페이지를 만들어보세요.',
-      basicProfile: '기본 프로필',
-      namePlaceholder: '이름',
-      headlinePlaceholder: '한 줄 소개',
-      aboutPlaceholder: '자기소개를 입력하세요.',
-      career: '경력',
-      addCareer: '경력 추가',
-      skills: '기술',
-      skillNamePlaceholder: '기술 이름, 예: React',
-      skillCategoryPlaceholder: '분야, 예: Frontend',
-      addSkill: '기술 추가',
-      saveProfile: '프로필 저장',
-      preview: '미리보기',
-    },
-    en: {
-      title: 'CareerGo',
-      subtitle: 'Create your own personal PR page.',
-      basicProfile: 'Basic Profile',
-      namePlaceholder: 'Your name',
-      headlinePlaceholder: 'Headline',
-      aboutPlaceholder: 'Tell people who you are.',
-      career: 'Career',
-      addCareer: 'Add career',
-      skills: 'Skills',
-      skillNamePlaceholder: 'Skill name, e.g. React',
-      skillCategoryPlaceholder: 'Category, e.g. Frontend',
-      addSkill: 'Add Skill',
-      saveProfile: 'Save Profile',
-      preview: 'Preview',
-    },
-    de: {
-      title: 'CareerGo',
-      subtitle: 'Erstelle deine eigene persönliche PR-Seite.',
-      basicProfile: 'Basisprofil',
-      namePlaceholder: 'Dein Name',
-      headlinePlaceholder: 'Kurzbeschreibung',
-      aboutPlaceholder: 'Stelle dich kurz vor.',
-      career: 'Karriere',
-      addCareer: 'Karriere hinzufügen',
-      skills: 'Fähigkeiten',
-      skillNamePlaceholder: 'Fähigkeit, z. B. React',
-      skillCategoryPlaceholder: 'Kategorie, z. B. Frontend',
-      addSkill: 'Fähigkeit hinzufügen',
-      saveProfile: 'Profil speichern',
-      preview: 'Vorschau',
-    },
-  }
   
-  const t = texts[language as keyof typeof texts]
 
   const loadSkills = () => {
   fetch('http://127.0.0.1:5001/api/skills')
@@ -101,12 +50,23 @@ function App() {
   }
 
   const addSkill = () => {
-  fetch('http://127.0.0.1:5001/api/skills')
+  fetch('http://127.0.0.1:5001/api/skills', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: skillName,
+      category: skillCategory,
+    }),
+  })
     .then((response) => response.json())
-    .then((data) => {
-      setSkills(data)
+    .then(() => {
+      setSkillName('')
+      setSkillCategory('')
+      loadSkills()
     })
-   }
+}
 
   const addCareer = () => {
     setCareerItems([
@@ -137,32 +97,7 @@ function App() {
       })),
     }
   
-    const loadSkills = () => {
-      fetch('http://127.0.0.1:5001/api/skills')
-        .then((response) => response.json())
-        .then((data) => {
-          setSkills(data)
-        })
-    }
-
-    const addSkill = () => {
-      fetch('http://127.0.0.1:5001/api/skills', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: skillName,
-          category: skillCategory,
-        }),
-      })
-        .then((response) => response.json())
-        .then(() => {
-          setSkillName('')
-          setSkillCategory('')
-          loadSkills()
-        })
-    }
+  
 
     fetch('http://127.0.0.1:5001/api/profile', {
       method: 'POST',
@@ -178,27 +113,7 @@ function App() {
       })
   }
 
-  useEffect(() => {
-    fetch('http://127.0.0.1:5001/api/profile')
-      .then((response) => response.json())
-      .then((data) => {
-        setName(data.name)
-        setHeadline(data.headline)
-        setAbout(data.about)
-  
-        const loadedCareerItems = data.careerItems.map((item: CareerItem) => ({
-          title: item.title,
-          organization: item.organization,
-          period: item.period,
-          description: item.description,
-          link: item.link,
-          portfolioFile: null,
-          portfolioFileUrl: '',
-        }))
-  
-        setCareerItems(loadedCareerItems)
-      })
-  }, [])
+ 
 
   useEffect(() => {
     fetch('http://127.0.0.1:5001/api/profile')
@@ -224,6 +139,10 @@ function App() {
     loadSkills()
   }, [])
 
+const printPreview = () => {
+  window.print()
+}
+
   return (
     <div className="app">
       <Sidebar language={language} setLanguage={setLanguage} />
@@ -242,13 +161,13 @@ function App() {
           />
 
           <input
-            placeholder="Headline, e.g. Software Developer"
+            placeholder={t.headlinePlaceholder}
             value={headline}
             onChange={(event) => setHeadline(event.target.value)}
           />
 
           <textarea
-            placeholder="Tell people who you are."
+            placeholder={t.aboutPlaceholder}
             value={about}
             onChange={(event) => setAbout(event.target.value)}
           />
@@ -258,14 +177,14 @@ function App() {
 
 
         <section className="editor-section">
-          <h2>Career</h2>
+          <h2>{t.career}</h2>
 
-          <button onClick={addCareer}>Add career</button>
+          <button onClick={addCareer}>{t.addCareer}</button>
 
           {careerItems.map((item, index) => (
             <div className="career-card" key={index}>
               <input
-                placeholder="Position"
+                placeholder={t.positionPlaceholder}
                 value={item.title}
                 onChange={(event) => {
                   const updatedItems = [...careerItems]
@@ -275,7 +194,7 @@ function App() {
               />
 
               <input
-                placeholder="Organization"
+                placeholder={t.organizationPlaceholder}
                 value={item.organization}
                 onChange={(event) => {
                   const updatedItems = [...careerItems]
@@ -285,7 +204,7 @@ function App() {
               />
 
               <input
-                placeholder="Period"
+                placeholder={t.periodPlaceholder}
                 value={item.period}
                 onChange={(event) => {
                   const updatedItems = [...careerItems]
@@ -295,7 +214,7 @@ function App() {
               />
 
               <textarea
-                placeholder="Description"
+                placeholder={t.descriptionPlaceholder}
                 value={item.description}
                 onChange={(event) => {
                   const updatedItems = [...careerItems]
@@ -344,21 +263,21 @@ function App() {
 
 
         <section className="editor-section">
-              <h2>Skills</h2>
+              <h2>{t.skills}</h2>
 
               <input
-               placeholder="Skill name, e.g. React"
+               placeholder={t.skillNamePlaceholder}
                value={skillName}
                onChange={(event) => setSkillName(event.target.value)}
                />
 
               <input
-              placeholder="Category, e.g. Frontend"
+              placeholder={t.skillCategoryPlaceholder}
               value={skillCategory}
               onChange={(event) => setSkillCategory(event.target.value)}
                />
 
-              <button onClick={addSkill}>Add Skill</button>
+              <button onClick={addSkill}>{t.addSkill}</button>
         </section>
 
 
@@ -368,20 +287,27 @@ function App() {
 
 
         <section className="preview-section">
-           <h2>Preview</h2>
+           <div className="preview-header">
+             <h2>{t.preview}</h2>
 
-           <div className="preview-card">
-           <h1>{name || 'Your Name'}</h1>
-           <h3>{headline || 'Your headline'}</h3>
-            <p>{about || 'Your self-introduction will appear here.'}</p>
+             <button className="print-button" onClick={printPreview}>
+               Print / Save as PDF
+             </button>
 
-           <h2>Career</h2>
+          </div>
+
+          <div className="preview-card">
+            <h1>{t.previewName}</h1>
+            <h3>{t.previewHeadline} </h3>
+             <p>{t.previewAbout} </p>
+
+            <h2>{t.career}</h2>
 
            {careerItems.length === 0 && (
-            <p>Your career history will appear here.</p>
+            <p> {t.career} </p>
            )}
 
-          {careerItems.map((item, index) => (
+           {careerItems.map((item, index) => (
             <div className="preview-item" key={index}>
               <h3>{item.title || 'Position'}</h3>
                <p>{item.organization || 'Organization'}</p>
@@ -400,13 +326,13 @@ function App() {
            </a>
            )}
              </div> 
-          ))}
+           ))}
 
 
-           <h2>Skills</h2>
+           <h2>{t.skills}</h2>
 
            {skills.length === 0 && (
-             <p>No skills added yet.</p>
+             <p>{t.previewSkills}</p>
            )}
 
            {skills.map((skill) => (

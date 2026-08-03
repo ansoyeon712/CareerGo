@@ -28,16 +28,6 @@ def init_db():
 
     connection.execute(
         """
-        CREATE TABLE IF NOT EXISTS skills (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            category TEXT NOT NULL DEFAULT ''
-        )
-        """
-    )
-
-    connection.execute(
-        """
         INSERT OR IGNORE INTO profile (
             id,
             name,
@@ -48,6 +38,18 @@ def init_db():
         VALUES (1, '', '', '', '[]')
         """
     )
+
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS skills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL DEFAULT ''
+        )
+        """
+    )
+
+
 
     connection.commit()
     connection.close()
